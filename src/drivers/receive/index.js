@@ -8,10 +8,10 @@ import type { Message } from '../types';
 import { MESSAGE_TYPE } from '../../conf';
 import { markWindowKnown, needsGlobalMessagingForBrowser } from '../../lib';
 import { deserializeMessage } from '../../serialize';
-import { getGlobal, globalStore } from '../../global';
+import { getGlobal, globalStore, getGlobalKey } from '../../global';
 import type { OnType, SendType, MessageEvent, CancelableType } from '../../types';
 
-import { RECEIVE_MESSAGE_TYPES } from './types';
+import { handleRequest, handleResponse, handleAck } from './types';
 
 function deserializeMessages(message : string, source : CrossDomainWindowType, origin : string, { on, send } : {| on : OnType, send : SendType |}) : ?$ReadOnlyArray<Message> {
     let parsedMessage;
@@ -30,7 +30,7 @@ function deserializeMessages(message : string, source : CrossDomainWindowType, o
         return;
     }
 
-    const parseMessages = parsedMessage[__POST_ROBOT__.__GLOBAL_KEY__];
+    const parseMessages = parsedMessage[getGlobalKey()];
 
     if (!Array.isArray(parseMessages)) {
         return;
@@ -53,6 +53,10 @@ export function receiveMessage(event : MessageEvent, { on, send } : {| on : OnTy
     let { source, origin, data } = event;
 
     if (__TEST__) {
+        if (isWindowClosed(source)) {
+            return;
+        }
+
         // $FlowFixMe
         origin = getDomain(source);
     }
@@ -82,11 +86,11 @@ export function receiveMessage(event : MessageEvent, { on, send } : {| on : OnTy
 
         try {
             if (message.type === MESSAGE_TYPE.REQUEST) {
-                RECEIVE_MESSAGE_TYPES[MESSAGE_TYPE.REQUEST](source, origin, message, { on, send });
+                handleRequest(source, origin, message, { on, send });
             } else if (message.type === MESSAGE_TYPE.RESPONSE) {
-                RECEIVE_MESSAGE_TYPES[MESSAGE_TYPE.RESPONSE](source, origin, message);
+                handleResponse(source, origin, message);
             } else if (message.type === MESSAGE_TYPE.ACK) {
-                RECEIVE_MESSAGE_TYPES[MESSAGE_TYPE.ACK](source, origin, message);
+                handleAck(source, origin, message);
             }
         } catch (err) {
             setTimeout(() => {

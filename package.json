@@ -1,6 +1,6 @@
 {
   "name": "post-robot",
-  "version": "10.0.39",
+  "version": "10.0.44",
   "description": "Simple postMessage based server.",
   "main": "index.js",
   "scripts": {
@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "auto-changelog": "^1.11.0",
-    "flow-bin": "^0.130.0",
+    "flow-bin": "0.155.0",
     "grumbler-scripts": "^3",
     "mocha": "^4"
   },

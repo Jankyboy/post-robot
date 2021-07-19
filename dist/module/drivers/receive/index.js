@@ -46,7 +46,7 @@ function deserializeMessages(message, source, origin, {
     return;
   }
 
-  const parseMessages = parsedMessage[__POST_ROBOT__.__GLOBAL_KEY__];
+  const parseMessages = parsedMessage[(0, _global.getGlobalKey)()];
 
   if (!Array.isArray(parseMessages)) {
     return;
@@ -76,7 +76,11 @@ function receiveMessage(event, {
   } = event;
 
   if (__TEST__) {
-    // $FlowFixMe
+    if ((0, _src2.isWindowClosed)(source)) {
+      return;
+    } // $FlowFixMe
+
+
     origin = (0, _src2.getDomain)(source);
   }
 
@@ -108,14 +112,14 @@ function receiveMessage(event, {
 
     try {
       if (message.type === _conf.MESSAGE_TYPE.REQUEST) {
-        _types.RECEIVE_MESSAGE_TYPES[_conf.MESSAGE_TYPE.REQUEST](source, origin, message, {
+        (0, _types.handleRequest)(source, origin, message, {
           on,
           send
         });
       } else if (message.type === _conf.MESSAGE_TYPE.RESPONSE) {
-        _types.RECEIVE_MESSAGE_TYPES[_conf.MESSAGE_TYPE.RESPONSE](source, origin, message);
+        (0, _types.handleResponse)(source, origin, message);
       } else if (message.type === _conf.MESSAGE_TYPE.ACK) {
-        _types.RECEIVE_MESSAGE_TYPES[_conf.MESSAGE_TYPE.ACK](source, origin, message);
+        (0, _types.handleAck)(source, origin, message);
       }
     } catch (err) {
       setTimeout(() => {
